@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Blue background -->
+  <rect width="32" height="32" rx="6" fill="#667eea"/>
+  <!-- White shield icon -->
+  <path d="M16 4 L8 8 L8 14 C8 20 12 26 16 28 C20 26 24 20 24 14 L24 8 Z" fill="white" stroke="white" stroke-width="1"/>
+  <!-- Medical cross -->
+  <rect x="14.5" y="10" width="3" height="10" rx="0.5" fill="#667eea"/>
+  <rect x="11" y="13.5" width="10" height="3" rx="0.5" fill="#667eea"/>
+</svg>

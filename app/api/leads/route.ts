@@ -8,6 +8,8 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('Received form data:', JSON.stringify(body, null, 2))
+    console.log('Email field specifically:', body.email, 'Type:', typeof body.email)
     
     // Validate required fields
     if (!body.email || !body.facility_type || !body.waste_types || !body.volume || !body.zip_code) {
@@ -126,15 +128,26 @@ export async function POST(request: NextRequest) {
     // Send welcome email to lead (if configured)
     if (resend) {
       try {
-        await resend.emails.send({
-          from: process.env.FROM_EMAIL || 'PharmWaste Disposal <noreply@pharmaceuticalwastedisposal.com>',
-          to: body.email,
-          subject: 'Welcome to Pharmaceutical Waste Disposal - Your Quote is Being Prepared',
+        const emailTo = body.email.trim() // Ensure no whitespace
+        console.log('Attempting to send welcome email to:', emailTo)
+        const welcomeEmail = await resend.emails.send({
+          from: 'Pharmaceutical Waste Disposal <info@pharmaceuticalwastedisposal.com>',
+          to: emailTo,
+          reply_to: 'info@pharmaceuticalwastedisposal.com',
+          subject: `Quote Request Received - ${body.company || 'Pharmaceutical Waste Disposal'}`,
           html: generateWelcomeEmailHTML(body),
+          headers: {
+            'X-Priority': '3',
+            'X-Entity-Ref-ID': `lead-${savedLead?.id || Date.now()}`,
+            'List-Unsubscribe': '<https://pharmaceuticalwastedisposal.com/unsubscribe>',
+          },
         })
-        console.log('Welcome email sent to lead')
+        console.log('Welcome email response:', JSON.stringify(welcomeEmail))
+        if (welcomeEmail.error) {
+          console.error('Resend error:', welcomeEmail.error)
+        }
       } catch (emailError) {
-        console.error('Welcome email failed:', emailError)
+        console.error('Welcome email failed to:', body.email, 'Error:', emailError)
       }
     }
 
@@ -264,62 +277,63 @@ function generateWelcomeEmailHTML(lead: any): string {
     <html>
     <head>
       <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px 10px 0 0; text-align: center; }
-        .content { background: #ffffff; padding: 30px; border: 1px solid #e0e0e0; border-radius: 0 0 10px 10px; }
-        .checkmark { color: #00C851; font-size: 18px; }
-        .timeline { background: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0; }
-        .cta { display: inline-block; padding: 15px 40px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; color: #666; font-size: 14px; margin-top: 30px; }
+        .header { background: #f8f9fa; padding: 20px; border-bottom: 2px solid #dee2e6; }
+        .content { background: #ffffff; padding: 20px; }
+        .info-box { background: #f8f9fa; padding: 15px; border-left: 3px solid #667eea; margin: 20px 0; }
+        .footer { color: #6c757d; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; }
+        a { color: #667eea; }
+        h1 { color: #212529; font-size: 24px; margin: 0; }
+        h2 { color: #495057; font-size: 18px; }
+        ul { margin: 10px 0; padding-left: 20px; }
+        li { margin: 5px 0; }
       </style>
     </head>
     <body>
       <div class="container">
         <div class="header">
-          <h1>Welcome to Pharmaceutical Waste Disposal</h1>
-          <p>Your Compliance Partner in Medical Waste Management</p>
+          <h1>Request Received</h1>
         </div>
         <div class="content">
-          <h2>Thank you for your interest, ${lead.company ? lead.company : 'valued customer'}!</h2>
+          <p>Hello${lead.company ? ` ${lead.company}` : ''},</p>
           
-          <p>We've received your request for pharmaceutical waste disposal services and our team is already working on finding the perfect solution for your facility.</p>
+          <p>We have received your request for pharmaceutical waste disposal services on ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.</p>
           
-          <div class="timeline">
-            <h3>What Happens Next:</h3>
-            <p>✅ <strong>Within 15 minutes:</strong> A specialist will review your requirements</p>
-            <p>✅ <strong>Within 1 hour:</strong> You'll receive personalized quotes from certified partners</p>
-            <p>✅ <strong>Within 24 hours:</strong> Complete compliance documentation package</p>
+          <div class="info-box">
+            <strong>Your Request Details:</strong>
+            <ul>
+              <li>Facility Type: ${lead.facility_type?.replace(/_/g, ' ')}</li>
+              <li>Waste Types: ${lead.waste_types?.join(', ')}</li>
+              <li>Service Location: ${lead.zip_code}</li>
+            </ul>
           </div>
           
-          <h3>Your Requirements:</h3>
+          <h2>Next Steps</h2>
+          <p>A waste management specialist will review your requirements and contact you within one business day with:</p>
           <ul>
-            <li><strong>Facility Type:</strong> ${lead.facility_type?.replace(/_/g, ' ').toUpperCase() || 'Healthcare Facility'}</li>
-            <li><strong>Waste Types:</strong> ${lead.waste_types?.join(', ') || 'Pharmaceutical Waste'}</li>
-            <li><strong>Service Area:</strong> ZIP ${lead.zip_code}</li>
+            <li>Customized pricing for your facility</li>
+            <li>Service schedule options</li>
+            <li>Compliance documentation requirements</li>
           </ul>
           
-          <h3>Why Choose Our Network:</h3>
-          <ul>
-            <li>✓ EPA Certified & DEA Registered Partners</li>
-            <li>✓ 30-40% Average Cost Savings</li>
-            <li>✓ Complete Compliance Documentation</li>
-            <li>✓ 24/7 Emergency Response Available</li>
-            <li>✓ Serving 2,847+ Healthcare Facilities</li>
-          </ul>
+          <p>If you need immediate assistance, please call: 1-800-742-7694</p>
           
-          <center>
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://pharmaceuticalwastedisposal.com'}/resources" class="cta">
-              Access Compliance Resources
-            </a>
-          </center>
+          <p>Thank you for considering Pharmaceutical Waste Disposal for your waste management needs.</p>
           
-          <p><strong>Need immediate assistance?</strong><br>
-          Call us directly at: <a href="tel:1-800-PHARMWASTE">1-800-PHARMWASTE</a></p>
+          <p>Best regards,<br>
+          The Pharmaceutical Waste Disposal Team</p>
           
           <div class="footer">
-            <p>This email was sent because you requested information about pharmaceutical waste disposal services.<br>
-            © 2024 Pharmaceutical Waste Disposal. All rights reserved.</p>
+            <p>Pharmaceutical Waste Disposal<br>
+            EPA Certified | DEA Registered<br>
+            <a href="https://pharmaceuticalwastedisposal.com">pharmaceuticalwastedisposal.com</a></p>
+            
+            <p>This email was sent to ${lead.email} because a quote was requested from our website. 
+            If you did not make this request, please disregard this email.</p>
+            
+            <p><a href="https://pharmaceuticalwastedisposal.com/unsubscribe">Unsubscribe</a> | 
+            <a href="https://pharmaceuticalwastedisposal.com/privacy">Privacy Policy</a></p>
           </div>
         </div>
       </div>
