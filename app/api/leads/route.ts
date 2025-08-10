@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
         const welcomeEmail = await resend.emails.send({
           from: 'Pharmaceutical Waste Disposal <info@pharmaceuticalwastedisposal.com>',
           to: emailTo,
-          reply_to: 'info@pharmaceuticalwastedisposal.com',
+          replyTo: 'info@pharmaceuticalwastedisposal.com',
           subject: `Quote Request Received - ${body.company || 'Pharmaceutical Waste Disposal'}`,
           html: generateWelcomeEmailHTML(body),
           headers: {
