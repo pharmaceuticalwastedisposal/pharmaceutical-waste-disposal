@@ -1,0 +1,39 @@
+/* DEBUG CSS - Find the exact overflow elements */
+* {
+  outline: 1px solid red !important;
+  box-sizing: border-box !important;
+}
+
+.container {
+  outline: 3px solid blue !important;
+  position: relative !important;
+}
+
+/* Mark elements that overflow their container */
+@media (max-width: 768px) {
+  .container > *,
+  .container * {
+    max-width: 100% !important;
+  }
+  
+  /* Highlight elements that are too wide */
+  * {
+    position: relative;
+  }
+  
+  *[class*="text-3xl"],
+  *[class*="text-4xl"], 
+  *[class*="text-5xl"] {
+    outline: 3px solid orange !important;
+  }
+  
+  /* Mark grid containers */
+  *[class*="grid"] {
+    outline: 2px solid purple !important;
+  }
+  
+  /* Mark flex containers */
+  *[class*="flex"] {
+    outline: 2px solid green !important;
+  }
+}
