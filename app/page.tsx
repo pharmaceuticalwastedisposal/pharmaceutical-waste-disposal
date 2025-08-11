@@ -59,7 +59,7 @@ export default function HomePage() {
               {/* Primary Headline with Main Keywords */}
               <div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                  <span className="text-primary-600">Pharmaceutical Waste Disposal</span> Specialists
+                  <span className="text-primary-600">Pharmaceutical Waste Disposal</span> Services
                 </h2>
                 <p className="text-lg sm:text-xl text-gray-600 mt-3 sm:mt-4">
                   We connect you with certified disposal specialists who handle your exact waste type. 
