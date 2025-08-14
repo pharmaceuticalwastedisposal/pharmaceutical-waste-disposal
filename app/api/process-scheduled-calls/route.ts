@@ -16,10 +16,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
   }
 
+  // Capture supabase client for use in callbacks
+  const supabaseClient = supabase
+
   try {
     // Get scheduled calls that are due
     const now = new Date()
-    const { data: scheduledCalls, error: fetchError } = await supabase
+    const { data: scheduledCalls, error: fetchError } = await supabaseClient
       .from('lead_interactions')
       .select(`
         *,
@@ -59,7 +62,7 @@ export async function GET(request: NextRequest) {
       // Skip if lead is already closed or converted
       if (lead.status === 'closed_won' || lead.status === 'closed_lost') {
         // Mark this scheduled call as completed
-        await supabase
+        await supabaseClient
           .from('lead_interactions')
           .update({
             interaction_data: {
@@ -78,7 +81,7 @@ export async function GET(request: NextRequest) {
 
       if (callResult.success && callResult.callId) {
         // Update the scheduled call record
-        await supabase
+        await supabaseClient
           .from('lead_interactions')
           .update({
             interaction_data: {
@@ -91,7 +94,7 @@ export async function GET(request: NextRequest) {
           .eq('id', scheduledCall.id)
 
         // Create a new interaction record for this call
-        await supabase
+        await supabaseClient
           .from('lead_interactions')
           .insert([{
             lead_id: lead.id,
@@ -106,7 +109,7 @@ export async function GET(request: NextRequest) {
 
         // Update lead status to contacted
         if (lead.status === 'new') {
-          await supabase
+          await supabaseClient
             .from('leads')
             .update({ 
               status: 'contacted',
@@ -117,6 +120,7 @@ export async function GET(request: NextRequest) {
 
         // Wait 30 seconds then check if call was answered
         setTimeout(async () => {
+          if (!callResult.callId) return
           const outcome = await checkCallOutcome(callResult.callId)
           
           if (!outcome.answered && attemptNumber === 1) {
@@ -125,7 +129,7 @@ export async function GET(request: NextRequest) {
           }
           
           // Log call outcome
-          await supabase
+          await supabaseClient
             .from('lead_interactions')
             .insert([{
               lead_id: lead.id,
@@ -143,7 +147,7 @@ export async function GET(request: NextRequest) {
         })
       } else {
         // Call failed - mark as completed with error
-        await supabase
+        await supabaseClient
           .from('lead_interactions')
           .update({
             interaction_data: {
@@ -197,8 +201,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
     }
 
+    // Capture supabase client for use in callbacks
+    const supabaseClient = supabase
+
     // Fetch lead data
-    const { data: lead, error } = await supabase
+    const { data: lead, error } = await supabaseClient
       .from('leads')
       .select('*')
       .eq('id', leadId)
@@ -213,7 +220,7 @@ export async function POST(request: NextRequest) {
 
     if (callResult.success) {
       // Log the interaction
-      await supabase
+      await supabaseClient
         .from('lead_interactions')
         .insert([{
           lead_id: lead.id,

@@ -271,7 +271,14 @@ function calculateOptimalCallTime(lead: Lead, attemptNumber: number): Date {
   
   const callTime = new Date(now.getTime() + delayMinutes * 60 * 1000)
   
-  // Adjust to optimal calling window
+  // For first attempts (5 minutes), skip business hours adjustment
+  // to ensure immediate response for hot leads
+  if (attemptNumber === 1 && delayMinutes <= 5) {
+    // Keep exact 5-minute timing for immediate follow-up
+    return callTime
+  }
+  
+  // Adjust to optimal calling window for subsequent attempts
   const hour = callTime.getHours()
   const { morning, afternoon } = CONVERSION_SETTINGS.CALLING_WINDOWS
   

@@ -324,6 +324,14 @@ export async function stopEmailSequence(
   }
 }
 
+// Type for email metrics query result
+interface EmailMetricsQueryResult {
+  interaction_data: Record<string, any>
+  leads: {
+    status: string
+  }
+}
+
 // Get email performance metrics
 export async function getEmailMetrics(days: number = 30): Promise<{
   totalSent: number
@@ -347,7 +355,7 @@ export async function getEmailMetrics(days: number = 30): Promise<{
         leads!inner(status)
       `)
       .eq('interaction_type', 'email_sent')
-      .gte('created_at', startDate.toISOString())
+      .gte('created_at', startDate.toISOString()) as { data: EmailMetricsQueryResult[] | null }
 
     if (!emailStats) {
       return { totalSent: 0, openRate: 0, clickRate: 0, conversionRate: 0, bySequence: {} }
@@ -369,7 +377,7 @@ export async function getEmailMetrics(days: number = 30): Promise<{
 
     // Calculate conversion rate from email recipients
     const convertedLeads = emailStats.filter(stat => 
-      stat.leads?.status === 'closed_won'
+      stat.leads.status === 'closed_won'
     ).length
 
     return {

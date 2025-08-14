@@ -159,6 +159,9 @@ export async function sendTemplateSMS(
   
   if (template === 'APPOINTMENT_CONFIRMATION' && additionalData?.appointmentTime) {
     message = SMS_TEMPLATES[template](lead, additionalData.appointmentTime)
+  } else if (template === 'APPOINTMENT_CONFIRMATION') {
+    // Handle case where appointment time is missing
+    throw new Error('APPOINTMENT_CONFIRMATION template requires appointmentTime')
   } else {
     message = SMS_TEMPLATES[template](lead)
   }
@@ -265,8 +268,8 @@ export async function validatePhoneNumber(phone: string): Promise<{
     
     return {
       valid: true,
-      carrier: lookup.carrier?.name || 'unknown',
-      type: lookup.carrier?.type || 'unknown'
+      carrier: typeof lookup.carrier?.name === 'string' ? lookup.carrier.name : 'unknown',
+      type: typeof lookup.carrier?.type === 'string' ? lookup.carrier.type : 'unknown'
     }
   } catch (error) {
     console.error('Phone validation error:', error)
