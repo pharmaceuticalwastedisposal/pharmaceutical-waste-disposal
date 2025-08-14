@@ -18,7 +18,7 @@ const formSchema = z.object({
   wasteTypes: z.array(z.string()).min(1, "Please select at least one waste type"),
   volume: z.string().min(1, "Please select your volume range"),
   email: z.string().email("Please enter a valid email"),
-  phone: z.string().optional(),
+  phone: z.string().min(10, "Phone number is required for urgent compliance calls").regex(/^[\d\s\-\(\)\.]+$/, "Please enter a valid phone number"),
   company: z.string().optional(),
   zipCode: z.string().regex(/^\d{5}$/, "Please enter a valid 5-digit ZIP code"),
 })
@@ -288,7 +288,7 @@ function ProgressiveLeadForm() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">Phone (for urgent updates)</Label>
+                    <Label htmlFor="phone">Phone (required for compliance calls) *</Label>
                     <Input
                       id="phone"
                       type="tel"

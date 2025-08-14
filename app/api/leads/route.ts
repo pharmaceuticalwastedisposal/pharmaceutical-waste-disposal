@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { supabase } from '@/lib/supabase'
+import { makeOutboundCall, calculateOptimalCallTime, SPECIALIST_PHONE } from '@/lib/bland-ai'
+import { validatePhoneNumber } from '@/lib/twilio-sms'
+import { scheduleEmailSequence } from '@/lib/email-scheduler'
+import { scheduleSMSSequence } from '@/lib/sms-scheduler'
 
 // Only initialize Resend if API key is provided
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -12,9 +16,9 @@ export async function POST(request: NextRequest) {
     console.log('Email field specifically:', body.email, 'Type:', typeof body.email)
     
     // Validate required fields
-    if (!body.email || !body.facility_type || !body.waste_types || !body.volume || !body.zip_code) {
+    if (!body.email || !body.phone || !body.facility_type || !body.waste_types || !body.volume || !body.zip_code) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: email, phone, facility type, waste types, volume, and ZIP code are all required' },
         { status: 400 }
       )
     }
@@ -107,6 +111,87 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Multi-channel follow-up sequence
+    if (savedLead) {
+      // 1. Schedule professional SMS sequence
+      if (savedLead.phone) {
+        const phoneValidation = await validatePhoneNumber(savedLead.phone)
+        if (phoneValidation.valid && phoneValidation.type !== 'landline') {
+          await scheduleSMSSequence(savedLead)
+          console.log('SMS sequence scheduled for lead:', savedLead.id)
+        }
+      }
+      
+      // 2. Schedule AI agent calls based on lead score
+      const firstCallTime = calculateOptimalCallTime(savedLead, 1)
+      const secondCallTime = calculateOptimalCallTime(savedLead, 2)
+      const finalCallTime = calculateOptimalCallTime(savedLead, 3)
+      
+      // Store call schedule in database
+      if (supabase) {
+        await supabase
+          .from('lead_interactions')
+          .insert([
+            {
+              lead_id: savedLead.id,
+              interaction_type: 'scheduled_call',
+              interaction_data: {
+                attempt: 1,
+                scheduled_time: firstCallTime.toISOString(),
+                specialist_phone: SPECIALIST_PHONE
+              },
+              source: 'automation'
+            },
+            {
+              lead_id: savedLead.id,
+              interaction_type: 'scheduled_call',
+              interaction_data: {
+                attempt: 2,
+                scheduled_time: secondCallTime.toISOString(),
+                specialist_phone: SPECIALIST_PHONE
+              },
+              source: 'automation'
+            },
+            {
+              lead_id: savedLead.id,
+              interaction_type: 'scheduled_call',
+              interaction_data: {
+                attempt: 3,
+                scheduled_time: finalCallTime.toISOString(),
+                specialist_phone: SPECIALIST_PHONE
+              },
+              source: 'automation'
+            }
+          ])
+        
+        console.log('AI call schedule created:', {
+          leadId: savedLead.id,
+          firstCall: firstCallTime,
+          secondCall: secondCallTime,
+          finalCall: finalCallTime
+        })
+      }
+
+      // 3. Send immediate welcome email to user
+      if (resend) {
+        try {
+          await resend.emails.send({
+            from: process.env.FROM_EMAIL || 'Sarah Johnson <sarah@pharmaceuticalwastedisposal.com>',
+            to: savedLead.email,
+            subject: 'Your Pharmaceutical Waste Quote Request - Next Steps',
+            html: generateWelcomeEmailHTML(savedLead),
+          })
+          console.log('Welcome email sent immediately to:', savedLead.email)
+        } catch (welcomeEmailError) {
+          console.error('Welcome email failed:', welcomeEmailError)
+        }
+      }
+
+      // 4. Schedule follow-up email drip sequence (excluding welcome since we just sent it)
+      await scheduleEmailSequence(savedLead)
+      console.log('Follow-up email sequence scheduled for lead:', savedLead.id)
+    }
+    
     // Send notification email to admin (if configured)
     if (resend && process.env.NOTIFICATION_EMAIL) {
       try {
@@ -125,31 +210,8 @@ export async function POST(request: NextRequest) {
       console.log('Email notifications not configured - skipping')
     }
 
-    // Send welcome email to lead (if configured)
-    if (resend) {
-      try {
-        const emailTo = body.email.trim() // Ensure no whitespace
-        console.log('Attempting to send welcome email to:', emailTo)
-        const welcomeEmail = await resend.emails.send({
-          from: 'Pharmaceutical Waste Disposal <info@pharmaceuticalwastedisposal.com>',
-          to: emailTo,
-          replyTo: 'info@pharmaceuticalwastedisposal.com',
-          subject: `Quote Request Received - ${body.company || 'Pharmaceutical Waste Disposal'}`,
-          html: generateWelcomeEmailHTML(body),
-          headers: {
-            'X-Priority': '3',
-            'X-Entity-Ref-ID': `lead-${savedLead?.id || Date.now()}`,
-            'List-Unsubscribe': '<https://pharmaceuticalwastedisposal.com/unsubscribe>',
-          },
-        })
-        console.log('Welcome email response:', JSON.stringify(welcomeEmail))
-        if (welcomeEmail.error) {
-          console.error('Resend error:', welcomeEmail.error)
-        }
-      } catch (emailError) {
-        console.error('Welcome email failed to:', body.email, 'Error:', emailError)
-      }
-    }
+    // Note: Welcome email is now handled by the scheduled email sequence
+    // The drip sequence starts with an enhanced welcome email immediately
 
     return NextResponse.json({
       success: true,
@@ -317,7 +379,19 @@ function generateWelcomeEmailHTML(lead: any): string {
             <li>Compliance documentation requirements</li>
           </ul>
           
-          <p>If you need immediate assistance, please call: 1-800-742-7694</p>
+          <h2 style="color: #28a745; margin: 20px 0;">📞 Speak with Our Specialist Now!</h2>
+          <p style="font-size: 18px; font-weight: bold;">Call ${SPECIALIST_PHONE || '1-855-DISPOSE-1'} for instant pricing</p>
+          <p style="background: #f0f8ff; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            Our specialist is available to:<br>
+            • Provide immediate custom pricing<br>
+            • Answer compliance questions<br>
+            • Schedule service setup<br>
+            • Compare savings vs your current vendor
+          </p>
+          
+          <p>${lead.phone ? `We'll also be calling you shortly at ${lead.phone} to discuss your needs.` : ''}</p>
+          
+          <p>If you need immediate assistance, please call: ${SPECIALIST_PHONE || '1-855-DISPOSE-1'}</p>
           
           <p>Thank you for considering Pharmaceutical Waste Disposal for your waste management needs.</p>
           

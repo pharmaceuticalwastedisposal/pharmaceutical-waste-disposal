@@ -30,6 +30,18 @@ export interface Lead {
   status: 'new' | 'contacted' | 'qualified' | 'proposal_sent' | 'closed_won' | 'closed_lost'
   notes?: string
   assigned_to?: string
+  // Multi-channel tracking fields
+  submission_count?: number
+  last_submission_at?: string
+  last_contact_at?: string
+  call_attempts?: number
+  sms_sent_count?: number
+  email_sent_count?: number
+  // Lead interaction tracking
+  last_call_at?: string
+  last_sms_at?: string
+  last_email_at?: string
+  conversion_sequence_started_at?: string
 }
 
 export interface FormSubmission {
@@ -42,6 +54,15 @@ export interface FormSubmission {
   completion_rate: number
   abandoned_at?: string
   completed_at?: string
+  created_at: string
+}
+
+export interface LeadInteraction {
+  id: string
+  lead_id: string
+  interaction_type: 'form_submission' | 'form_resubmission' | 'scheduled_call' | 'completed_call' | 'scheduled_email' | 'email_sent' | 'scheduled_sms' | 'sms_sent' | 'voicemail_left' | 'appointment_scheduled'
+  interaction_data: Record<string, any>
+  source: string
   created_at: string
 }
 

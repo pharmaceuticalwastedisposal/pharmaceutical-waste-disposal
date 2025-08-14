@@ -1,0 +1,27 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/process-emails",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/process-calls", 
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/process-sms",
+      "schedule": "*/15 * * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
+  ]
+}
