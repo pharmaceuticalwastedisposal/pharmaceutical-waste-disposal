@@ -79,9 +79,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Location pages - important for local SEO
   const locationPages = [
     '/pharmaceutical-waste-disposal-california',
-    '/pharmaceutical-waste-disposal-texas',
-    '/pharmaceutical-waste-disposal-florida',
-    '/pharmaceutical-waste-disposal-new-york',
+    // '/pharmaceutical-waste-disposal-texas', // TODO: Create this page
+    // '/pharmaceutical-waste-disposal-florida', // TODO: Create this page
+    // '/pharmaceutical-waste-disposal-new-york', // TODO: Create this page
   ]
   
   locationPages.forEach(page => {
@@ -121,23 +121,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   }
   
-  // Add pages that don't exist yet but should be in sitemap
-  // These will use current date until the pages are created
-  const plannedPages = [
-    { url: '/pricing', priority: 0.9, changeFrequency: 'weekly' as const },
-    { url: '/contact', priority: 0.85, changeFrequency: 'monthly' as const },
-    { url: '/about', priority: 0.7, changeFrequency: 'monthly' as const },
-    { url: '/compliance', priority: 0.8, changeFrequency: 'monthly' as const },
-  ]
+  // IMPORTANT: Only add pages here AFTER creating the actual page files
+  // Uncomment these as you create the pages:
+  // const plannedPages = [
+  //   { url: '/pricing', priority: 0.9, changeFrequency: 'weekly' as const },
+  //   { url: '/contact', priority: 0.85, changeFrequency: 'monthly' as const },
+  //   { url: '/about', priority: 0.7, changeFrequency: 'monthly' as const },
+  //   { url: '/compliance', priority: 0.8, changeFrequency: 'monthly' as const },
+  // ]
   
-  plannedPages.forEach(page => {
-    pages.push({
-      url: `${baseUrl}${page.url}`,
-      lastModified: new Date().toISOString(), // Will auto-update when pages are created
-      changeFrequency: page.changeFrequency,
-      priority: page.priority,
-    })
-  })
+  // plannedPages.forEach(page => {
+  //   pages.push({
+  //     url: `${baseUrl}${page.url}`,
+  //     lastModified: new Date().toISOString(),
+  //     changeFrequency: page.changeFrequency,
+  //     priority: page.priority,
+  //   })
+  // })
   
   return pages
 }

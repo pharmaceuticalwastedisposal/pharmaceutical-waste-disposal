@@ -10,8 +10,8 @@ export async function GET(request: NextRequest) {
 
   const results = {
     timestamp: new Date().toISOString(),
-    emails: { success: false, error: null },
-    calls: { success: false, error: null }
+    emails: { success: false, error: null as string | null, data: null as any },
+    calls: { success: false, error: null as string | null, data: null as any }
   }
 
   try {

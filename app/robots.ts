@@ -5,24 +5,16 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
+        // Allow ALL crawlers (search engines + AI) for maximum visibility
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/thank-you/', '/_next/', '/static/', '/private/'],
-        crawlDelay: 0,
-      },
-      {
-        // Specific rules for major search engines
-        userAgent: ['Googlebot', 'Bingbot', 'Slurp', 'DuckDuckBot'],
-        allow: '/',
-        disallow: ['/api/', '/_next/', '/static/'],
-        crawlDelay: 0,
-      },
-      {
-        // Rules for AI/LLM crawlers
-        userAgent: ['GPTBot', 'ChatGPT-User', 'CCBot', 'Claude-Web', 'PerplexityBot'],
-        allow: '/',
-        disallow: ['/api/', '/_next/', '/static/', '/private/'],
-        crawlDelay: 1,
+        disallow: [
+          '/api/',      // API routes - no SEO value
+          '/thank-you', // Conversion page - no SEO value
+          '/_next/',    // Next.js internals
+          '/static/',   // Static assets
+          '/private/',  // Private content
+        ],
       },
     ],
     sitemap: `${SITE_CONFIG.domain}/sitemap.xml`,
