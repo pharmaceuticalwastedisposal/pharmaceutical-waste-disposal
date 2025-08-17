@@ -3,8 +3,8 @@ export const SITE_CONFIG = {
   domain: "https://pharmaceuticalwastedisposal.com",
   title: "Licensed Pharmaceutical Waste Disposal | Same-Day Response",
   description: "Certified pharmaceutical waste disposal. Serving hospitals, pharmacies, and healthcare facilities nationwide. 100% compliance guarantee. Get instant quote.",
-  phone: "1-800-PHARMA-WASTE",
-  phoneClean: "18007427629",
+  phone: "+1 (855) 592-4560",
+  phoneClean: "18555924560",
   email: "compliance@pharmaceuticalwastedisposal.com",
 }
 

@@ -123,7 +123,7 @@ export default function RootLayout({
                   },
                   contactPoint: [{
                     "@type": "ContactPoint",
-                    telephone: "+1-800-742-7694",
+                    telephone: "+1-855-592-4560",
                     contactType: "customer service",
                     contactOption: ["TollFree", "HearingImpairedSupported"],
                     areaServed: "US",
@@ -136,7 +136,7 @@ export default function RootLayout({
                     }
                   }, {
                     "@type": "ContactPoint",
-                    telephone: "+1-800-742-7694",
+                    telephone: "+1-855-592-4560",
                     contactType: "emergency",
                     contactOption: "TollFree",
                     areaServed: "US",
