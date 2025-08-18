@@ -140,7 +140,8 @@ export async function POST(request: NextRequest) {
               facility_type: savedLead.facility_type,
               waste_types: savedLead.waste_types,
               volume_range: savedLead.volume_range,
-              zip_code: savedLead.zip_code
+              zip_code: savedLead.zip_code,
+              completed: false
             },
             source: 'form_submission'
           }])
