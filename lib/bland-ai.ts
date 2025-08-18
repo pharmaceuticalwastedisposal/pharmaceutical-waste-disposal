@@ -3,7 +3,7 @@ import { Lead } from './supabase'
 // Bland.ai configuration
 const BLAND_API_KEY = process.env.BLAND_API_KEY
 const BLAND_API_URL = 'https://api.bland.ai/v1'
-const SPECIALIST_PHONE = process.env.SPECIALIST_PHONE || '1-855-DISPOSE-1' // Your specialist direct line
+const SPECIALIST_PHONE = process.env.SPECIALIST_PHONE || '+1 (855) 592-4560' // Your specialist direct line
 
 // Conversion optimization settings
 const CONVERSION_SETTINGS = {
