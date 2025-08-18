@@ -125,19 +125,43 @@ export async function POST(request: NextRequest) {
       // 2. Schedule call with 90-second delay
       if (savedLead.phone) {
         try {
-          // Trigger delayed call via separate endpoint
-          fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pharmaceuticalwastedisposal.com'}/api/trigger-call`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              leadId: savedLead.id,
-              delay: 90 // 90 seconds
-            })
-          }).catch(error => {
-            console.error('❌ Failed to schedule call:', error)
-          })
+          // Make immediate call using actual lead data
+          const cleanPhone = savedLead.phone.replace(/\D/g, '')
+          const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`
+          
+          // Wait 90 seconds then make the call
+          setTimeout(async () => {
+            try {
+              const response = await fetch('https://api.bland.ai/v1/calls', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${process.env.BLAND_API_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  phone_number: formattedPhone,
+                  from: '+18555924560',
+                  task: `You are Sarah from Pharmaceutical Waste Disposal. Call ${savedLead.company || 'this facility'} about their quote request for ${savedLead.waste_types.join(', ')} disposal. Facility type: ${savedLead.facility_type}. Volume: ${savedLead.volume_range}. ZIP: ${savedLead.zip_code}. Discuss pricing and schedule consultation.`,
+                  first_sentence: `Hi, this is Sarah from Pharmaceutical Waste Disposal. Is this ${savedLead.company || 'the facility'} that just requested a quote?`,
+                  voice: 'maya',
+                  model: 'enhanced',
+                  max_duration: 300,
+                  answered_by_enabled: true,
+                  wait_for_greeting: true,
+                  record: false
+                })
+              })
+              
+              const result = await response.json()
+              if (response.ok) {
+                console.log('✅ Call initiated:', result.call_id)
+              } else {
+                console.error('❌ Call failed:', result)
+              }
+            } catch (error) {
+              console.error('❌ Call error:', error)
+            }
+          }, 90000) // 90 seconds
           
           console.log('⏰ Call scheduled for 90 seconds from now')
         } catch (error) {
