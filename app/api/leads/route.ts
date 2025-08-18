@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
       if (savedLead.phone) {
         try {
           // Trigger delayed call via separate endpoint
-          fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/trigger-call`, {
+          fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pharmaceuticalwastedisposal.com'}/api/trigger-call`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
