@@ -34,6 +34,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Make the call
+    if (!BLAND_API_KEY) {
+      console.error('Bland API key not configured')
+      return NextResponse.json({ error: 'Bland API key not configured' }, { status: 500 })
+    }
+    
     const cleanPhone = lead.phone.replace(/\D/g, '')
     const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`
     
