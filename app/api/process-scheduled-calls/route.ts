@@ -6,11 +6,7 @@ import { sendTemplateSMS } from '@/lib/twilio-sms'
 // This endpoint should be called by a cron job every 5 minutes
 // Can be set up with Vercel Cron, GitHub Actions, or any external cron service
 export async function GET(request: NextRequest) {
-  // Verify this is from an authorized source (cron job)
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || (!authHeader.includes('Bearer') && !process.env.CRON_SECRET)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  console.log('Processing scheduled calls at:', new Date().toISOString())
 
   if (!supabase) {
     return NextResponse.json({ error: 'Database not configured' }, { status: 500 })

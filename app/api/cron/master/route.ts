@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Master cron job that handles all scheduled tasks
 export async function GET(request: NextRequest) {
-  // Verify this is from Vercel cron (Vercel automatically adds this header)
-  const authHeader = request.headers.get('authorization')
-  if (!authHeader || (!authHeader.includes('Bearer') && !process.env.CRON_SECRET)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  console.log('Master cron job triggered at:', new Date().toISOString())
 
   const results = {
     timestamp: new Date().toISOString(),
