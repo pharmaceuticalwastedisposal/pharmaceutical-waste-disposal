@@ -17,6 +17,11 @@ export async function POST(request: NextRequest) {
     }
     
     // Get lead data from database
+    if (!supabase) {
+      console.error('Database not configured')
+      return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+    }
+    
     const { data: lead, error } = await supabase
       .from('leads')
       .select('*')
