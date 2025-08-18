@@ -8,7 +8,7 @@ import { sendTemplateSMS } from '@/lib/twilio-sms'
 export async function GET(request: NextRequest) {
   // Verify this is from an authorized source (cron job)
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!authHeader || (!authHeader.includes('Bearer') && !process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

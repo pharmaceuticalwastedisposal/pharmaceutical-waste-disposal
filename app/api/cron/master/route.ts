@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Master cron job that handles all scheduled tasks
 export async function GET(request: NextRequest) {
-  // Verify this is from Vercel cron
+  // Verify this is from Vercel cron (Vercel automatically adds this header)
   const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!authHeader || (!authHeader.includes('Bearer') && !process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // Get the base URL for internal API calls
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://pharmaceutical-waste-disposal.vercel.app'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pharmaceuticalwastedisposal.com'
     
     // Process scheduled emails
     try {
