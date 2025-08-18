@@ -126,9 +126,13 @@ async function makeOutboundCall(
   }
 
   try {
+    // Format phone number properly
+    const cleanPhone = lead.phone.replace(/\D/g, '')
+    const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`
+    
     const callRequest: BlandCallRequest = {
-      phone_number: lead.phone,
-      from: SPECIALIST_PHONE,
+      phone_number: formattedPhone,
+      from: '+18555924560',
       task: generateSpecialistScript(lead),
       first_sentence: `Hi, this is Sarah from Pharmaceutical Waste Disposal. Is this ${lead.company || 'the facility'} that just requested a quote?`,
       voice: 'maya', // Professional female voice

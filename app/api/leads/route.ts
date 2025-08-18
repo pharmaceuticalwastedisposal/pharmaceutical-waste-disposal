@@ -122,10 +122,33 @@ export async function POST(request: NextRequest) {
         }
       }
       
-      // 2. Schedule AI agent calls based on lead score
-      const firstCallTime = calculateOptimalCallTime(savedLead, 1)
-      const secondCallTime = calculateOptimalCallTime(savedLead, 2)
-      const finalCallTime = calculateOptimalCallTime(savedLead, 3)
+      // 2. Schedule call with 90-second delay
+      if (savedLead.phone) {
+        try {
+          // Trigger delayed call via separate endpoint
+          fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/trigger-call`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              leadId: savedLead.id,
+              delay: 90 // 90 seconds
+            })
+          }).catch(error => {
+            console.error('❌ Failed to schedule call:', error)
+          })
+          
+          console.log('⏰ Call scheduled for 90 seconds from now')
+        } catch (error) {
+          console.error('❌ Call scheduling error:', error)
+        }
+      }
+
+      // Schedule follow-up calls for later
+      const firstCallTime = calculateOptimalCallTime(savedLead, 2) // Changed to 2nd attempt
+      const secondCallTime = calculateOptimalCallTime(savedLead, 3)
+      const finalCallTime = calculateOptimalCallTime(savedLead, 4)
       
       // Store call schedule in database
       if (supabase) {
