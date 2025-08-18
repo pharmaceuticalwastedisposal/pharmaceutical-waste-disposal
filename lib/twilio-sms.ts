@@ -258,19 +258,20 @@ export async function validatePhoneNumber(phone: string): Promise<{
     return { valid: cleaned.length === 10 || cleaned.length === 11 }
   }
 
+  // Skip Twilio Lookup API - just do basic validation
   try {
     const cleanPhone = phone.replace(/\D/g, '')
-    const formattedPhone = cleanPhone.startsWith('1') ? `+${cleanPhone}` : `+1${cleanPhone}`
     
-    const lookup = await twilioClient.lookups.v1
-      .phoneNumbers(formattedPhone)
-      .fetch()
-    
-    return {
-      valid: true,
-      carrier: typeof lookup.carrier?.name === 'string' ? lookup.carrier.name : 'unknown',
-      type: typeof lookup.carrier?.type === 'string' ? lookup.carrier.type : 'unknown'
+    // Basic US phone number validation
+    if (cleanPhone.length === 10 || (cleanPhone.length === 11 && cleanPhone.startsWith('1'))) {
+      return {
+        valid: true,
+        carrier: 'unknown',
+        type: 'mobile' // Assume mobile for SMS
+      }
     }
+    
+    return { valid: false }
   } catch (error) {
     console.error('Phone validation error:', error)
     return { valid: false }
