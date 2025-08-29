@@ -1,6 +1,6 @@
 export const SITE_CONFIG = {
   name: "PharmaceuticalWasteDisposal.com",
-  domain: "https://pharmaceuticalwastedisposal.com",
+  domain: "https://www.pharmaceuticalwastedisposal.com",
   title: "Licensed Pharmaceutical Waste Disposal | Same-Day Response",
   description: "Certified pharmaceutical waste disposal. Serving hospitals, pharmacies, and healthcare facilities nationwide. 100% compliance guarantee. Get instant quote.",
   phone: "+1 (855) 592-4560",
