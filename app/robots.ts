@@ -10,7 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: [
           '/api/',      // API routes - no SEO value
-          '/thank-you', // Conversion page - no SEO value
           '/_next/',    // Next.js internals
           '/static/',   // Static assets
           '/private/',  // Private content
